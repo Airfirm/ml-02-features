@@ -39,7 +39,7 @@ Keep the example notebook as it is. Either copy it or use it to build a new note
 
 Links:
 
-* [ml_02_case.ipynb](notebooks/ml_02_case.ipynb)
+* [ml_02_femi.ipynb](https://github.com/Airfirm/ml-02-features/blob/main/notebooks/ml_02_femi.ipynb)
 
 ## Working Files
 
@@ -312,7 +312,7 @@ This may explain why the model performance is almost perfect. A future improveme
 
 Additional project instructions, terms, and notes:
 
-[docs/index.md](docs/index.md)
+[docs/index.md](https://github.com/Airfirm/ml-02-features/blob/main/docs/index.md)
 
 ## Challenges
 
