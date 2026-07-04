@@ -1,36 +1,31 @@
-"""app_femi.py - example.
+"""app_femi.py - custom feature engineering project.
 
-An example of a supervised regression case.
-This app is used to verify project workflow.
+A supervised regression project using chocolate sales data.
 
 Author: Oluwafemi Salawu
 Date: 2026-07-03
 
 Process:
     - Load a CSV dataset.
+    - Rename revenue to total_sales.
+    - Create engineered features.
     - Train a supervised regression model.
     - Evaluate model performance.
-    - Predict one new case.
-    - Create useful charts.
+    - Predict one new sale.
+    - Create and save useful charts.
 
 Data Source:
-- data/raw/hours_scores_femi.csv
+- data/raw/sales.csv
 
 Terminal command to run this file from the root project folder:
 
 uv run python -m mlstudio.app_femi
-
-OBS:
-  Don't edit this file - it should remain a working example.
-  It is used in each module to test the installation and workflow.
-  You never need to do anything with it, but if would like,
-  you can copy it, rename it, and modify your copy.
-  If you do, include your command to run it in the docstring above and in README.md.
 """
 
-# === Section 1a. DECLARE IMPORTS (BRING IN FREE CODE) ===
+# === Section 1a. DECLARE IMPORTS ===
 
 import logging
+from pathlib import Path
 from typing import Final
 
 from datafun_toolkit.logger import get_logger, log_header
@@ -49,49 +44,27 @@ log_header(LOG, "ML")
 
 # === Section 1c. Global Constants and Configuration ===
 
-DATASET_NAME: Final[str] = "hours_scores_femi"
+DATASET_NAME: Final[str] = "sales"
+IMAGE_DIR: Final[Path] = Path("docs/images")
 
-# Important: Inspect your dataset to identify feature and target column names.
-# Raw data is typically in data/raw.
-# You can assume this data has already been cleaned and preprocessed for modeling,
-# but you should still inspect it to understand the column names and data types.
+# Target column we want to predict.
+TARGET_COL: Final[str] = "total_sales"
 
-# STEP 1. Pick the target variable we want to predict.
-
-TARGET_COL: Final[str] = "score"
-
-# STEP 2. Define the column names (features) that may help predict the target variable.
-
+# Features used for prediction.
 FEATURE_COLS: Final[list[str]] = [
-    "hours_studied",
-    "practice_quizzes",
-    "attendance_pct",
-    "sleep_hours",
-    "prior_score",
+    "quantity",
+    "unit_price",
+    "discount",
+    "cost",
+    "order_month",
+    "order_day_of_week",
+    "discounted_unit_price",
+    "gross_sales",
+    "discount_amount",
 ]
 
-# STEP 3. Define the test size and random state for reproducibility.
-
-# For a small dataset, use a larger test size (e.g., 0.30 or 0.40)
-# to get a more reliable estimate of model performance.
-
-# 0.30 means: hold back 30% of the records for testing, and train the model on the other 70%.
-# So for every 10 records:
-# 7 records -> training
-# 3 records -> testing
-
-# The model learns from the training records,
-# then we check how well it predicts the test records it did not train on.
-
-TEST_SIZE: Final[float] = 0.30
+TEST_SIZE: Final[float] = 0.20
 RANDOM_STATE: Final[int] = 42
-
-# RANDOM_STATE controls the random split.
-# Without it, every run might choose a different 70/30 split.
-# With it, we get the same split every time, so results always match.
-# The value 42 is arbitrary and conventional. We can choose any integer.
-
-# === Section 1d. Pandas Configuration for Display ===
 
 pd.set_option("display.max_columns", 50)
 pd.set_option("display.width", 120)
@@ -101,7 +74,7 @@ pd.set_option("display.width", 120)
 
 
 def load_data() -> pd.DataFrame:
-    """Load the case dataset from the data/raw folder."""
+    """Load the chocolate sales dataset from the data/raw folder."""
     LOG.info(f"Loading dataset: {DATASET_NAME}")
 
     df: pd.DataFrame = pd.read_csv(f"data/raw/{DATASET_NAME}.csv")
@@ -138,7 +111,45 @@ def check_quality(df: pd.DataFrame) -> None:
     LOG.info(f"Duplicate row count: {duplicate_count}")
 
 
-# === Section 5. Create a Clean View ===
+# === Section 5. Engineer Features ===
+
+
+def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
+    """Create engineered features for the chocolate sales dataset."""
+    LOG.info("Engineering new features")
+
+    df_features = df.copy()
+
+    # Rename revenue to total_sales for clearer target naming.
+    if "revenue" in df_features.columns:
+        df_features = df_features.rename(columns={"revenue": "total_sales"})
+
+    # Convert order_date to datetime so we can create date-based features.
+    df_features["order_date"] = pd.to_datetime(df_features["order_date"])
+
+    # Date features.
+    df_features["order_month"] = df_features["order_date"].dt.month
+    df_features["order_day_of_week"] = df_features["order_date"].dt.dayofweek
+
+    # Price and discount features.
+    df_features["discounted_unit_price"] = df_features["unit_price"] * (
+        1 - df_features["discount"]
+    )
+    df_features["gross_sales"] = df_features["quantity"] * df_features["unit_price"]
+    df_features["discount_amount"] = (
+        df_features["gross_sales"] * df_features["discount"]
+    )
+
+    LOG.info("Created engineered features")
+    LOG.info(
+        "New features: order_month, order_day_of_week, "
+        "discounted_unit_price, gross_sales, discount_amount"
+    )
+
+    return df_features
+
+
+# === Section 6. Create a Clean View ===
 
 
 def make_clean_view(df: pd.DataFrame) -> pd.DataFrame:
@@ -147,20 +158,16 @@ def make_clean_view(df: pd.DataFrame) -> pd.DataFrame:
 
     selected_cols: list[str] = FEATURE_COLS + [TARGET_COL]
 
-    # Select only the columns we need.
     df_selected: pd.DataFrame = df[selected_cols]  # type: ignore[assignment]
-
-    # Drop rows with any missing values.
     df_no_missing: pd.DataFrame = df_selected.dropna()
-
-    # Assign a copy of the no-missing DataFrame to df_clean to avoid SettingWithCopyWarning.
     df_clean: pd.DataFrame = df_no_missing.copy()
 
     LOG.info(f"Clean view: {df_clean.shape[0]} rows, {df_clean.shape[1]} columns")
+
     return df_clean
 
 
-# === Section 6. Train Supervised Model ===
+# === Section 7. Train Supervised Model ===
 
 
 def train_model(df_clean: pd.DataFrame) -> LinearRegression:
@@ -191,56 +198,86 @@ def train_model(df_clean: pd.DataFrame) -> LinearRegression:
     return model
 
 
-# === Section 7. Predict One New Case ===
+# === Section 8. Predict One New Case ===
 
 
 def predict_example(model: LinearRegression) -> None:
-    """Use the trained model to predict one new student score."""
-    LOG.info("Predicting one new case")
+    """Use the trained model to predict one new chocolate sale."""
+    LOG.info("Predicting one new chocolate sale")
 
     new_case = pd.DataFrame(
         [
             {
-                "hours_studied": 6.5,
-                "practice_quizzes": 4,
-                "attendance_pct": 92,
-                "sleep_hours": 7.0,
-                "prior_score": 72,
+                "quantity": 4,
+                "unit_price": 12.50,
+                "discount": 0.10,
+                "cost": 25.00,
+                "order_month": 12,
+                "order_day_of_week": 5,
+                "discounted_unit_price": 12.50 * (1 - 0.10),
+                "gross_sales": 4 * 12.50,
+                "discount_amount": (4 * 12.50) * 0.10,
             }
         ]
     )
 
-    predicted_score: float = model.predict(new_case)[0]
+    predicted_total_sales: float = model.predict(new_case)[0]
 
     LOG.info(f"New case:\n{new_case}")
-    LOG.info(f"Predicted score: {predicted_score:.1f}")
+    LOG.info(f"Predicted total sales: {predicted_total_sales:.2f}")
 
 
-# === Section 8. Create Visualizations ===
+# === Section 9. Create Visualizations ===
 
 
 def make_plots(df_clean: pd.DataFrame, model: LinearRegression) -> None:
-    """Create charts for the supervised regression case."""
-    LOG.info("Creating chart: hours studied vs score")
+    """Create and save charts for the supervised regression project."""
+    LOG.info("Creating output image folder if needed")
+    IMAGE_DIR.mkdir(parents=True, exist_ok=True)
+
+    LOG.info("Creating chart: quantity vs total sales")
 
     fig, ax = plt.subplots(figsize=(9, 5))
 
-    scatter_plt: Axes = sns.scatterplot(
+    quantity_plt: Axes = sns.scatterplot(
         data=df_clean,
-        x="hours_studied",
+        x="quantity",
         y=TARGET_COL,
         ax=ax,
     )
 
-    scatter_plt.set_title("Hours Studied vs Score (CLOSE chart to continue)")
-    scatter_plt.set_xlabel("Hours Studied")
-    scatter_plt.set_ylabel("Score")
+    quantity_plt.set_title("Quantity vs Total Sales")
+    quantity_plt.set_xlabel("Quantity")
+    quantity_plt.set_ylabel("Total Sales")
+
+    fig.tight_layout()
+    quantity_path = IMAGE_DIR / "quantity_vs_total_sales_femi.png"
+    fig.savefig(quantity_path)
+    LOG.info(f"Saved chart: {quantity_path}")
+
+    LOG.info("Creating chart: discounted unit price vs total sales")
+
+    fig, ax = plt.subplots(figsize=(9, 5))
+
+    price_plt: Axes = sns.scatterplot(
+        data=df_clean,
+        x="discounted_unit_price",
+        y=TARGET_COL,
+        ax=ax,
+    )
+
+    price_plt.set_title("Discounted Unit Price vs Total Sales")
+    price_plt.set_xlabel("Discounted Unit Price")
+    price_plt.set_ylabel("Total Sales")
+
+    fig.tight_layout()
+    price_path = IMAGE_DIR / "discounted_unit_price_vs_total_sales_femi.png"
+    fig.savefig(price_path)
+    LOG.info(f"Saved chart: {price_path}")
 
     LOG.info("Creating chart: model coefficients")
 
     fig, ax = plt.subplots(figsize=(9, 5))
-
-    LOG.info(f"Got a figure {fig} and axes {ax} from plt.subplots().")
 
     coefficient_df = pd.DataFrame(
         {
@@ -256,24 +293,39 @@ def make_plots(df_clean: pd.DataFrame, model: LinearRegression) -> None:
         ax=ax,
     )
 
-    bar_plt.set_title("Model Coefficients (CLOSE chart to continue)")
+    bar_plt.set_title("Model Coefficients")
     bar_plt.set_xlabel("Coefficient")
     bar_plt.set_ylabel("Feature")
 
+    fig.tight_layout()
+    coefficient_path = IMAGE_DIR / "model_coefficients_sales_femi.png"
+    fig.savefig(coefficient_path)
+    LOG.info(f"Saved chart: {coefficient_path}")
 
-# === Section 9. Summary and Next Steps ===
+
+# === Section 10. Summary and Next Steps ===
 
 
-def summarize(df: pd.DataFrame, df_clean: pd.DataFrame) -> None:
+def summarize(
+    df: pd.DataFrame, df_features: pd.DataFrame, df_clean: pd.DataFrame
+) -> None:
     """Log a brief summary."""
     LOG.info("========================")
     LOG.info("SUMMARY")
     LOG.info("========================")
     LOG.info(f"Dataset: {DATASET_NAME}")
     LOG.info(f"Original rows: {df.shape[0]}")
+    LOG.info(f"Rows after feature engineering: {df_features.shape[0]}")
     LOG.info(f"Clean rows: {df_clean.shape[0]}")
     LOG.info(f"Features: {FEATURE_COLS}")
     LOG.info(f"Target: {TARGET_COL}")
+    LOG.info(
+        "Technical modification: applied feature engineering to chocolate sales data"
+    )
+    LOG.info(
+        "New problem: predict total_sales using quantity, price, discount, cost, "
+        "date features, and engineered sales features"
+    )
 
 
 # === DEFINE THE MAIN FUNCTION THAT CALLS OTHER FUNCTIONS ===
@@ -296,8 +348,11 @@ def main() -> None:
     LOG.info("Check data quality........")
     check_quality(df)
 
+    LOG.info("Engineer features.........")
+    df_features = engineer_features(df)
+
     LOG.info("Create clean view.........")
-    df_clean = make_clean_view(df)
+    df_clean = make_clean_view(df_features)
 
     LOG.info("Train supervised model....")
     model = train_model(df_clean)
@@ -309,7 +364,7 @@ def main() -> None:
     make_plots(df_clean, model)
 
     LOG.info("Summarize workflow........")
-    summarize(df, df_clean)
+    summarize(df, df_features, df_clean)
 
     LOG.info(
         "----- in a script, call plt.show() once at the end to display all charts -----"
@@ -329,9 +384,6 @@ def main() -> None:
 
 
 # === CONDITIONAL EXECUTION GUARD ===
-
-# WHY: Only call main() when running this file directly as a script.
-# This is standard Python boilerplate.
 
 if __name__ == "__main__":
     main()

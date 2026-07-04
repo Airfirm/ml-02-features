@@ -148,23 +148,122 @@ Press `Ctrl+c` (both keys together) or `Ctrl+Z` then `Enter` on Windows.
 ## Example Output (Can Remove this Section after You Verify)
 
 ```shell
-| INFO | ML | Summarize workflow........
-| INFO | ML | ========================
-| INFO | ML | SUMMARY
-| INFO | ML | ========================
-| INFO | ML | Dataset: hours_scores_case
-| INFO | ML | Original rows: 10
-| INFO | ML | Clean rows: 10
-| INFO | ML | Features: ['hours_studied', 'practice_quizzes', 'attendance_pct', 'sleep_hours', 'prior_score']
-| INFO | ML | Target: score
-| INFO | ML | ----- in a script, call plt.show() once at the end to display all charts -----
-| INFO | ML | ----- in a script, CLOSE the chart windows with the close button to CONTINUE -----
-| INFO | ML | Workflow complete
-| INFO | ML | IMPORTANT: This script creates chart windows.
-| INFO | ML | Close chart windows and terminate this process with CTRL+c as needed.
-| INFO | ML | ========================
-| INFO | ML | Executed successfully!
-| INFO | ML | ========================
+2026-07-04 11:00:52 | INFO | ML | === RUN START ===
+2026-07-04 11:00:52 | INFO | ML | project=ML
+2026-07-04 11:00:52 | INFO | ML | repo_dir=ml-02-features
+2026-07-04 11:00:52 | INFO | ML | python=3.14.2
+2026-07-04 11:00:52 | INFO | ML | os=Windows 11
+2026-07-04 11:00:52 | INFO | ML | shell=powershell
+2026-07-04 11:00:52 | INFO | ML | cwd=.
+2026-07-04 11:00:52 | INFO | ML | github_actions=False
+2026-07-04 11:00:52 | INFO | ML | === RUN START ===
+2026-07-04 11:00:52 | INFO | ML | project=ML
+2026-07-04 11:00:52 | INFO | ML | repo_dir=ml-02-features
+2026-07-04 11:00:52 | INFO | ML | python=3.14.2
+2026-07-04 11:00:52 | INFO | ML | os=Windows 11
+2026-07-04 11:00:52 | INFO | ML | shell=powershell
+2026-07-04 11:00:52 | INFO | ML | cwd=.
+2026-07-04 11:00:52 | INFO | ML | github_actions=False
+2026-07-04 11:00:52 | INFO | ML | ========================
+2026-07-04 11:00:52 | INFO | ML | START main()
+2026-07-04 11:00:52 | INFO | ML | ========================
+2026-07-04 11:00:52 | INFO | ML | Load dataset..............
+2026-07-04 11:00:52 | INFO | ML | Loading dataset: sales
+2026-07-04 11:00:53 | INFO | ML | Loaded: 1000000 rows, 11 columns
+2026-07-04 11:00:53 | DEBUG | ML |
+      order_id  order_date product_id store_id customer_id  quantity  unit_price  discount  revenue   cost  profit
+0  0RD00000001  2023-01-07      P0080     S093     C040749         5       14.43      0.15    61.33  42.77   18.56
+1  0RD00000002  2023-10-22      P0173     S065     C020161         3       12.01      0.00    36.03  19.06   16.97
+2  0RD00000003  2023-05-07      P0115     S078     C048069         2       10.02      0.00    20.04  10.29    9.75
+3  0RD00000004  2024-06-23      P0186     S088     C047901         2       14.66      0.10    26.39  16.35   10.04
+4  0RD00000005  2024-09-24      P0197     S054     C033950         1       12.34      0.00    12.34   7.94    4.40
+2026-07-04 11:00:53 | INFO | ML | Inspect dataset...........
+2026-07-04 11:00:53 | INFO | ML | Column names
+2026-07-04 11:00:53 | DEBUG | ML | ['order_id', 'order_date', 'product_id', 'store_id', 'customer_id', 'quantity', 'unit_price', 'discount', 'revenue', 'cost', 'profit']
+2026-07-04 11:00:53 | INFO | ML | DataFrame info
+<class 'pandas.DataFrame'>
+RangeIndex: 1000000 entries, 0 to 999999
+Data columns (total 11 columns):
+ #   Column       Non-Null Count    Dtype
+---  ------       --------------    -----
+ 0   order_id     1000000 non-null  str
+ 1   order_date   1000000 non-null  str
+ 2   product_id   1000000 non-null  str
+ 3   store_id     1000000 non-null  str
+ 4   customer_id  1000000 non-null  str
+ 5   quantity     1000000 non-null  int64
+ 6   unit_price   1000000 non-null  float64
+ 7   discount     1000000 non-null  float64
+ 8   revenue      1000000 non-null  float64
+ 9   cost         1000000 non-null  float64
+ 10  profit       1000000 non-null  float64
+dtypes: float64(5), int64(1), str(5)
+memory usage: 83.9 MB
+2026-07-04 11:00:53 | INFO | ML | Dataset shape: 1000000 rows, 11 columns
+2026-07-04 11:00:53 | INFO | ML | Check data quality........
+2026-07-04 11:00:53 | INFO | ML | Missing values by column
+2026-07-04 11:00:53 | DEBUG | ML |
+order_id       0
+order_date     0
+product_id     0
+store_id       0
+customer_id    0
+quantity       0
+unit_price     0
+discount       0
+revenue        0
+cost           0
+profit         0
+dtype: int64
+2026-07-04 11:00:54 | INFO | ML | Duplicate row count: 0
+2026-07-04 11:00:54 | INFO | ML | Engineer features.........
+2026-07-04 11:00:54 | INFO | ML | Engineering new features
+2026-07-04 11:00:54 | INFO | ML | Created engineered features
+2026-07-04 11:00:54 | INFO | ML | New features: order_month, order_day_of_week, discounted_unit_price, gross_sales, discount_amount
+2026-07-04 11:00:54 | INFO | ML | Create clean view.........
+2026-07-04 11:00:54 | INFO | ML | Creating clean modeling view
+2026-07-04 11:00:54 | INFO | ML | Clean view: 1000000 rows, 10 columns
+2026-07-04 11:00:54 | INFO | ML | Train supervised model....
+2026-07-04 11:00:54 | INFO | ML | Training LinearRegression model
+2026-07-04 11:00:55 | INFO | ML | Mean absolute error: 0.00
+2026-07-04 11:00:55 | INFO | ML | R-squared: 1.00
+2026-07-04 11:00:55 | INFO | ML | Predict one case..........
+2026-07-04 11:00:55 | INFO | ML | Predicting one new chocolate sale
+2026-07-04 11:00:55 | INFO | ML | New case:
+   quantity  unit_price  discount  cost  order_month  order_day_of_week  discounted_unit_price  gross_sales  \
+0         4        12.5       0.1  25.0           12                  5                  11.25         50.0
+
+   discount_amount
+0              5.0
+2026-07-04 11:00:55 | INFO | ML | Predicted total sales: 45.00
+2026-07-04 11:00:55 | INFO | ML | Create charts.............
+2026-07-04 11:00:55 | INFO | ML | Creating output image folder if needed
+2026-07-04 11:00:55 | INFO | ML | Creating chart: quantity vs total sales
+2026-07-04 11:00:57 | INFO | ML | Saved chart: docs\images\quantity_vs_total_sales_femi.png
+2026-07-04 11:00:57 | INFO | ML | Creating chart: discounted unit price vs total sales
+2026-07-04 11:00:59 | INFO | ML | Saved chart: docs\images\discounted_unit_price_vs_total_sales_femi.png
+2026-07-04 11:00:59 | INFO | ML | Creating chart: model coefficients
+2026-07-04 11:00:59 | INFO | ML | Saved chart: docs\images\model_coefficients_sales_femi.png
+2026-07-04 11:00:59 | INFO | ML | Summarize workflow........
+2026-07-04 11:00:59 | INFO | ML | ========================
+2026-07-04 11:00:59 | INFO | ML | SUMMARY
+2026-07-04 11:00:59 | INFO | ML | ========================
+2026-07-04 11:00:59 | INFO | ML | Dataset: sales
+2026-07-04 11:00:59 | INFO | ML | Original rows: 1000000
+2026-07-04 11:00:59 | INFO | ML | Rows after feature engineering: 1000000
+2026-07-04 11:00:59 | INFO | ML | Clean rows: 1000000
+2026-07-04 11:00:59 | INFO | ML | Features: ['quantity', 'unit_price', 'discount', 'cost', 'order_month', 'order_day_of_week', 'discounted_unit_price', 'gross_sales', 'discount_amount']
+2026-07-04 11:00:59 | INFO | ML | Target: total_sales
+2026-07-04 11:00:59 | INFO | ML | Technical modification: applied feature engineering to chocolate sales data
+2026-07-04 11:00:59 | INFO | ML | New problem: predict total_sales using quantity, price, discount, cost, date features, and engineered sales features
+2026-07-04 11:00:59 | INFO | ML | ----- in a script, call plt.show() once at the end to display all charts -----
+2026-07-04 11:00:59 | INFO | ML | ----- in a script, CLOSE the chart windows with the close button to CONTINUE -----
+2026-07-04 11:05:05 | INFO | ML | Workflow complete
+2026-07-04 11:05:05 | INFO | ML | IMPORTANT: This script creates chart windows.
+2026-07-04 11:05:05 | INFO | ML | Close chart windows and terminate this process with CTRL+c as needed.
+2026-07-04 11:05:05 | INFO | ML | ========================
+2026-07-04 11:05:05 | INFO | ML | Executed successfully!
+2026-07-04 11:05:05 | INFO | ML | ========================
 ```
 
 ## Findings and Visuals
